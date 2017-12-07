@@ -3,14 +3,14 @@ import sys
 import secrets
 
 def word_complex():
-    rand = secrets.randbelow(369812)
+    rand = secrets.randbelow(371778)
     file = open("dict4schools/safedict_full.txt")
     lines = file.readlines()
     word = lines[rand]
     return word
 
 def word_simple():
-    rand = secrets.randbelow(40932)
+    rand = secrets.randbelow(40922)
     file = open("dict4schools/safedict_simple.txt")
     lines = file.readlines()
     word = lines[rand]
@@ -62,11 +62,13 @@ def cli_args(length=2,num_length=2):
     if len(sys.argv) == 3:
         length = int(sys.argv[1])
         num_length = int(sys.argv[2])
+        gen=simple(length,num_length)
 
     # Detect simple vs complex vs full
     elif str(sys.argv[1]) == 'complex' or str(sys.argv[1]) == 'c' or str(sys.argv[1]) == '--complex' or str(sys.argv[1]) == '-c':
+        length = int(sys.argv[2])
+        num_length = int(sys.argv[3])
         gen=complex(length,num_length)
-        print ("complex")
 
     # Detect help
     elif str(sys.argv[1]) == 'h' or str(sys.argv[1]) == 'help' or str(sys.argv[1]) == '-h' or str(sys.argv[1]) == '--help':
@@ -89,11 +91,11 @@ except:
     args="false"
 
 if args == "true":
-    gen = cli_args()
+    randpass=cli_args()
 else:
-    gen=simple(length,num_length)
+    randpass=simple(length,num_length)
 
-print(gen)
+print(randpass)
 
 # ## todo
 # Errors: ./password.py complex 3
