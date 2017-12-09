@@ -3,16 +3,22 @@ A new python-based random password generator that uses only safe words. This is 
 
 # Setting up
 Just clone this repository by typing in:
-`git clone https://github.com/InnovativeInventor/RandPass`
+```
+git clone https://github.com/InnovativeInventor/RandPass
+```
 Then, change into the directory by typing in:
-`cd RandPass`
+```
+cd RandPass
+```
 Finally, execute the scrip by typing in:
-`bash genpass.sh <options>`
+```
+python3 password.py <options>
 
 Usage:
-    bash genpass.sh <options>
+    python3 password.py <options>
     -h --help                   Show help
     -c --complex                Specifies complex dictionary
     -n --numbers                Specifies length of the random number used
     -a --amount                 Specifies the amount of passwords to be generated
     -w --words                 Specifies the amount of passwords to be generated
+```

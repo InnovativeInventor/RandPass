@@ -135,8 +135,6 @@ if args.amount:
 if args.complex:
     complexity = "complex"
 
-start = time.time()
-
 # Loop multiple processes
 # def loop(count):
 #     password = gen_pass(word_length,num_length,complexity)
@@ -176,6 +174,3 @@ try:
     print("Done!")
 except:
     print("Done!")
-
-end = time.time()
-print (end-start)
