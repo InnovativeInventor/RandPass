@@ -1,48 +1,61 @@
 #!/usr/bin/env python3
+import os
 import sys
 import secrets
+import argparse
+import subprocess
+import multiprocessing as mp
+import time # Get rid of later
 
-def word_complex():
-    rand = secrets.randbelow(371778)
-    file = open("dict4schools/safedict_full.txt")
-    lines = file.readlines()
-    word = lines[rand]
-    return word
+# Dimensions of screen
+rows, columns = os.popen('stty size', 'r').read().split()
 
-def word_simple():
-    rand = secrets.randbelow(40922)
-    file = open("dict4schools/safedict_simple.txt")
-    lines = file.readlines()
-    word = lines[rand]
-    return word
-
-def complex(length=2,num_length=2):
+# Pass gen function
+def gen_pass(length=2,num_length=2,complexity="simple"):
     listpass = []
-    num = secrets.randbelow(length)
+    # Finding place to insert
+    place_insert = secrets.randbelow(length)
+
+    # Generating random number to insert
     randnums = secrets.randbelow(10**num_length)
     randnum = str(randnums)
 
-    count = 0
-    while count < length:
-        listpass.append(word_complex().rstrip())
-        count += 1
-    listpass.insert(num-1, randnum)
-    gen_pass = undo_list(listpass)
-    return(gen_pass)
+    # Detecting complexity and finding length
+    if complexity == complex:
+        dictionary = open("dict4schools/safedict_full.txt")
+        dict_lines = dictionary.readlines()
+    else:
+        dictionary = open("dict4schools/safedict_simple.txt")
+        dict_lines = dictionary.readlines()
 
-def simple(length=2,num_length=2):
-    listpass = []
-    num = secrets.randbelow(length)
-    randnums = secrets.randbelow(10**num_length)
-    randnum = str(randnums)
+    # Finding length of dictionary
+    dict_len = len(dict_lines)
 
     count = 0
     while count < length:
-        listpass.append(word_simple().rstrip())
+        listpass.append(gen_random(dict_lines,dict_len).rstrip())
         count += 1
-    listpass.insert(num-1, randnum)
+
+    # Inserting number and undoing list
+    listpass.insert(place_insert-1, randnum)
     gen_pass = undo_list(listpass)
     return(gen_pass)
+
+def gen_random(dict_lines,dict_len):
+    # Getting word
+    line_number = secrets.randbelow(dict_len)
+    word = dict_lines[line_number]
+    return word
+
+def check_blacklist(password):
+    # Returns false if matches a word in blacklist
+    blacklist = open("dict4schools/blacklists/blacklist_full.txt")
+    black_list = blacklist.readlines()
+    black_list = [word.strip() for word in black_list]
+    if any(word in password for word in black_list):
+        return False
+    else:
+        return True
 
 # Turning a list back into text
 def undo_list(input):
@@ -57,45 +70,112 @@ def help():
     print("Contributions are welcome!")
     sys.exit(1)
 
-def cli_args(length=2,num_length=2):
-    # Command-line Args
-    if len(sys.argv) == 3:
-        length = int(sys.argv[1])
-        num_length = int(sys.argv[2])
-        gen=simple(length,num_length)
+def open_dialog():
+    subprocess.call(["open", args.output])
 
-    # Detect simple vs complex vs full
-    elif str(sys.argv[1]) == 'complex' or str(sys.argv[1]) == 'c' or str(sys.argv[1]) == '--complex' or str(sys.argv[1]) == '-c':
-        length = int(sys.argv[2])
-        num_length = int(sys.argv[3])
-        gen=complex(length,num_length)
+def output(password,count):
+    if args.verbose:
+        print(" "*int(columns),end='\r')
+        print(password)
 
-    # Detect help
-    elif str(sys.argv[1]) == 'h' or str(sys.argv[1]) == 'help' or str(sys.argv[1]) == '-h' or str(sys.argv[1]) == '--help':
-        help()
+    # Display bar code
+    disp_frac=" Progress: " + str(count)+'/'+str(args.amount)
+    percentage=round((count/args.amount * 100),2)
+    disp_percent=" " + str(percentage) + "%"
 
-    elif len(sys.argv) == 2:
-        print("Error: Incorrect number of arguments provided.")
-        print("If you are going to pass options, please see the output of -help below.")
-        help()
-    return gen
+    # Code for the bar
+    length=int(columns)-len(disp_frac)-len(disp_percent)
+    length=length-4
+    prog=round(percentage*length/100)
+    togo=round((100-percentage)*length/100)
 
-length=int(2)
-num_length=int(2)
+    # Split into two parts disp frac and remaining
+    bar=" [" + "-"*prog + " "*togo + "] "
 
+    # If output option was selected
+    if args.output:
+        pass_list = open(args.output,"a+")
+        pass_list.write(password + "\n")
+
+        # Only on last run
+        if count == args.amount:
+            print(disp_frac + bar + disp_percent)
+            results_ciphertext = input("Do you want to open " + args.output + " [Y/N]")
+            if results_ciphertext == "yes" or results_ciphertext == "y" or results_ciphertext == "Yes" or results_ciphertext == "Y":
+                open_dialog()
+
+    if count == args.amount:
+        print()
+        # print(disp_frac + bar + disp_percent)
+    else:
+        print(disp_frac + bar + disp_percent, end='\r')
+
+parser = argparse.ArgumentParser(description='A tool to generate random passwords.')
+parser.add_argument('complex', help='Specifies if words should be taken from a complex dictionary.', action="store_true")
+parser.add_argument("--num", "-n", type=int, help="Specifies the length of the randum number.")
+parser.add_argument("--word", "--words", "-w", type=int, help="Specifies the number of words to be used.")
+parser.add_argument("--amount", "-a", type=int, help="Specifies number of passwords to be generated.")
+parser.add_argument("--output", "-o", type=str, help="Specifies file to output password to.")
+parser.add_argument("--verbose", "-v", help="Shows the passwords made", action="store_true")
+args = parser.parse_args()
+
+# Default values
+word_length = int(2)
+num_length = int(2)
+amount = int(1)
+complexity = "simple"
+
+# Setting argument variables
+if args.word:
+    word_length = args.word
+if args.num:
+    num_length = args.num
+if args.amount:
+    amount = args.amount
+if args.complex:
+    complexity = "complex"
+
+start = time.time()
+
+# Loop multiple processes
+# def loop(count):
+#     password = gen_pass(word_length,num_length,complexity)
+#     if check_blacklist(password):
+#         output(password,count)
+#     return count
+#
+# count = 0
+# while count < amount:
+#     processes = [mp.Process(target=loop(count))]
+#     loop(count)
+#     count += 1
+
+# Multiple processes
+# def worker(count):
+#         password = gen_pass(word_length,num_length,complexity)
+#         if check_blacklist(password):
+#             output(password,count)
+#
+# for i in range(amount):
+#     p = mp.Process(target=worker(i))
+#     jobs = []
+#     jobs.append(p)
+#     p.start()
+
+# original code
+count = 0
+while count < amount:
+    count += 1
+    password = gen_pass(word_length,num_length,complexity)
+    if check_blacklist(password):
+        output(password,count)
+
+# Print done and close if pass_list is open
 try:
-    len(sys.argv)
-    args="true"
-
+    pass_list.close()
+    print("Done!")
 except:
-    args="false"
+    print("Done!")
 
-if args == "true":
-    randpass=cli_args()
-else:
-    randpass=simple(length,num_length)
-
-print(randpass)
-
-# ## todo
-# Errors: ./password.py complex 3
+end = time.time()
+print (end-start)
