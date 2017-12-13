@@ -3,9 +3,8 @@ import os
 import sys
 import secrets
 import argparse
-import subprocess
-import multiprocessing as mp
-import time # Get rid of later
+# import subprocess
+# import multiprocessing as mp
 
 # Dimensions of screen
 rows, columns = os.popen('stty size', 'r').read().split()
