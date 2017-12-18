@@ -8,7 +8,7 @@ from pathlib import Path
 # import multiprocessing as mp
 
 # Version
-version="2.1"
+version="2.2"
 
 # Dimensions of screen
 rows, columns = os.popen('stty size', 'r').read().split()

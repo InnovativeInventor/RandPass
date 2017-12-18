@@ -25,7 +25,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-latest_version=2.1
+latest_version=2.2
 
 while [[ $# -gt 0 ]]
 do
@@ -98,9 +98,9 @@ if ! [ "$(type -t password)" ] || ! [ -e /etc/dict4schools ] || ! [ "$(password 
     detect_uninstall
     echo "rm /usr/local/bin/password" >> /etc/SafePass/uninstall.sh
     exit
-fi
-
-if [ "$uninstall" = YES ]; then
+elif [ "$uninstall" = YES ]; then
     echo "Uninstalling"
     bash /etc/SafePass/uninstall.sh
+else
+    echo "No options applicable, exiting."
 fi
