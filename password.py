@@ -108,10 +108,7 @@ def output(password,count,passfile="password.txt"):
         print(" "*int(columns),end='\r')
         print(password)
 
-    if count == amount:
-        print()
-        # print(disp_frac + bar + disp_percent)
-    else:
+    if not count == amount:
         print(disp_frac + bar + disp_percent, end='\r')
 
 parser = argparse.ArgumentParser(description='A tool to generate random passwords.')
@@ -186,6 +183,7 @@ while count < amount:
 # Print done and close if pass_list is open
 try:
     pass_list.close()
-    print("Done!")
+    print('Done!')
+
 except:
-    print("Done!")
+    print('Done!')

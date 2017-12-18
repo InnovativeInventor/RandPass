@@ -1,6 +1,11 @@
 # SafePass
 A new python-based random password generator that uses only safe words. This is aimed for children/school audiences.
 
+# One-line run/setup
+If you want to run this in one command, type in this command
+`git clone --quiet --recursive https://github.com/InnovativeInventor/SafePass && cd SafePass && python3 password.py`
+
+
 # Setting up
 Just clone this repository (and all submoduels) by typing in:
 ```
