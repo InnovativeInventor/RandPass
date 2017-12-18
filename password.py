@@ -4,8 +4,7 @@ import sys
 import secrets
 import argparse
 import subprocess
-import multiprocessing as mp
-import time # Get rid of later
+# import multiprocessing as mp
 
 # Dimensions of screen
 rows, columns = os.popen('stty size', 'r').read().split()
@@ -70,17 +69,16 @@ def help():
     print("Contributions are welcome!")
     sys.exit(1)
 
-def open_dialog():
-    subprocess.call(["open", args.output])
+def open_dialog(passfile="password.txt"):
+    subprocess.call(["open", passfile])
 
-def output(password,count):
+def output(password,count,passfile="password.txt"):
     if args.verbose:
-        print(" "*int(columns),end='\r')
-        print(password)
+        verbose = "true"
 
     # Display bar code
-    disp_frac=" Progress: " + str(count)+'/'+str(args.amount)
-    percentage=round((count/args.amount * 100),2)
+    disp_frac=" Progress: " + str(count)+'/'+str(amount)
+    percentage=round((count/amount * 100),2)
     disp_percent=" " + str(percentage) + "%"
 
     # Code for the bar
@@ -93,18 +91,24 @@ def output(password,count):
     bar=" [" + "-"*prog + " "*togo + "] "
 
     # If output option was selected
-    if args.output:
-        pass_list = open(args.output,"a+")
+    if args.output or args.save:
+        pass_list = open(passfile,"a+")
         pass_list.write(password + "\n")
 
         # Only on last run
-        if count == args.amount:
+        if count == amount:
             print(disp_frac + bar + disp_percent)
-            results_ciphertext = input("Do you want to open " + args.output + " [Y/N]")
+            results_ciphertext = input("Do you want to open " + passfile + " [Y/N]")
             if results_ciphertext == "yes" or results_ciphertext == "y" or results_ciphertext == "Yes" or results_ciphertext == "Y":
-                open_dialog()
+                open_dialog(passfile)
+    if not args.output or args.save:
+        verbose = "true"
 
-    if count == args.amount:
+    if verbose == "true":
+        print(" "*int(columns),end='\r')
+        print(password)
+
+    if count == amount:
         print()
         # print(disp_frac + bar + disp_percent)
     else:
@@ -116,6 +120,7 @@ parser.add_argument("--num", "-n", type=int, help="Specifies the length of the r
 parser.add_argument("--word", "--words", "-w", type=int, help="Specifies the number of words to be used.")
 parser.add_argument("--amount", "-a", type=int, help="Specifies number of passwords to be generated.")
 parser.add_argument("--output", "-o", type=str, help="Specifies file to output password to.")
+parser.add_argument("--save", "-s", help="Save to password.txt", action="store_true")
 parser.add_argument("--verbose", "-v", help="Shows the passwords made", action="store_true")
 args = parser.parse_args()
 
@@ -132,6 +137,16 @@ if args.num:
     num_length = args.num
 if args.amount:
     amount = args.amount
+else:
+    amount = 1
+if args.save:
+    passfile = "password.txt"
+
+if args.output:
+    passfile = args.output
+else:
+    passfile = "password.txt"
+
 if args.complex:
     complexity = "complex"
 
@@ -166,7 +181,7 @@ while count < amount:
     count += 1
     password = gen_pass(word_length,num_length,complexity)
     if check_blacklist(password):
-        output(password,count)
+        output(password,count,passfile)
 
 # Print done and close if pass_list is open
 try:
