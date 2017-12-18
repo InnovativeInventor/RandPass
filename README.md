@@ -10,7 +10,7 @@ Just clone this repository (and all submoduels) by typing in:
 ```
 git clone --recursive https://github.com/InnovativeInventor/SafePass
 ```
-Finally, execute the scrip by typing in:
+Finally, execute the script by typing in:
 ```
 python3 SafePass/password.py <options>
 
