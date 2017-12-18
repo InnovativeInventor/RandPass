@@ -25,18 +25,55 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-if [ -e password.py ]; then
-    echo "exists"
-    mv password.py /usr/local/bin/password
-    mv dict4schools /etc/dict4schools
-elif [ -e SafePass ]; then
-    echo "exists"
-    mv SafePass/password.py /usr/local/bin/password
-else
-    git clone --quiet --recursive https://github.com/InnovativeInventor/SafePass
-    mv SafePass/password.py /usr/local/bin/password
-    mv SafePass/dict4schools /etc/dict4schools
-    rm -r SafePass
+latest_version=2.1
+
+while [[ $# -gt 0 ]]
+do
+key="$1"
+
+case $key in
+    -u|--uninstall)
+    uninstall=YES
+    shift # past argument
+    ;;
+esac
+done
+
+detect_uninstall() {
+    if ! [ -e "/etc/SafePass/uninstall.sh" ]; then
+        mkdir -p /etc/SafePass
+        touch /etc/SafePass/uninstall.sh
+        echo "#!/bin/bash" >> /etc/SafePass/uninstall.sh
+    fi
+}
+
+if ! [ -e /etc/dict4schools ]; then
+    echo "rm -r /etc/dict4schools" >> /etc/SafePass/uninstall.sh
 fi
-chmod +x /usr/local/bin/password.py
-password
+
+if ! [ "$(type -t password)" ] || ! [ -e /etc/dict4schools ] || ! [ $(password --version) == "$latest_version" ]; then
+    detect_uninstall
+    if [ -e password.py ]; then
+        cp password.py /usr/local/bin/password
+        cp dict4schools /etc/dict4schools
+
+    elif [ -e SafePass ]; then
+        cp SafePass/password.py /usr/local/bin/password
+        cp SafePass/dict4schools /etc/dict4schools
+
+    else
+        git clone --quiet --recursive https://github.com/InnovativeInventor/SafePass
+        mv SafePass/password.py /usr/local/bin/password
+        mv SafePass/dict4schools /etc/dict4schools
+        rm -r SafePass
+    fi
+    chmod +x /usr/local/bin/password
+    password
+    echo "rm /usr/local/bin/password" >> /etc/SafePass/uninstall.sh
+    exit
+fi
+
+if [ "$uninstall" = YES ]; then
+    echo "Uninstalling"
+    bash /etc/SafePass/uninstall.sh
+fi

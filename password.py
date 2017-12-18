@@ -7,6 +7,9 @@ import subprocess
 from pathlib import Path
 # import multiprocessing as mp
 
+# Version
+version="2.1"
+
 # Dimensions of screen
 rows, columns = os.popen('stty size', 'r').read().split()
 
@@ -130,6 +133,7 @@ parser.add_argument("--amount", "-a", type=int, help="Specifies number of passwo
 parser.add_argument("--output", "-o", type=str, help="Specifies file to output password to.")
 parser.add_argument("--save", "-s", help="Save to password.txt", action="store_true")
 parser.add_argument("--verbose", "-v", help="Shows the passwords made", action="store_true")
+parser.add_argument("--version", help="Shows version of script", action="store_true")
 args = parser.parse_args()
 
 # Default values
@@ -149,6 +153,9 @@ else:
     amount = 1
 if args.save:
     passfile = "password.txt"
+if args.version:
+    print(version)
+    exit
 
 if args.output:
     passfile = args.output
