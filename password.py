@@ -4,6 +4,7 @@ import sys
 import secrets
 import argparse
 import subprocess
+from pathlib import Path
 # import multiprocessing as mp
 
 # Dimensions of screen
@@ -21,11 +22,9 @@ def gen_pass(length=2,num_length=2,complexity="simple"):
 
     # Detecting complexity and finding length
     if complexity == complex:
-        dictionary = open("dict4schools/safedict_full.txt")
-        dict_lines = dictionary.readlines()
+        dict_lines = open_dict("safedict_full.txt")
     else:
-        dictionary = open("dict4schools/safedict_simple.txt")
-        dict_lines = dictionary.readlines()
+        dict_lines = open_dict("safedict_simple.txt")
 
     # Finding length of dictionary
     dict_len = len(dict_lines)
@@ -40,6 +39,19 @@ def gen_pass(length=2,num_length=2,complexity="simple"):
     gen_pass = undo_list(listpass)
     return(gen_pass)
 
+def open_dict(dict_location):
+    file_installed = Path("/etc/dict4schools/"+dict_location)
+    file_cloned = Path("dict4schools/"+dict_location)
+    if file_installed.exists():
+        word_file = open("/etc/dict4schools/"+dict_location)
+    elif file_cloned.exists():
+        word_file = open("dict4schools/"+dict_location)
+    else:
+        print("Dictionary not found, exiting")
+        exit(2)
+    list_lines = word_file.readlines()
+    return list_lines
+
 def gen_random(dict_lines,dict_len):
     # Getting word
     line_number = secrets.randbelow(dict_len)
@@ -48,8 +60,7 @@ def gen_random(dict_lines,dict_len):
 
 def check_blacklist(password):
     # Returns false if matches a word in blacklist
-    blacklist = open("dict4schools/blacklists/blacklist_full.txt")
-    black_list = blacklist.readlines()
+    black_list = open_dict("blacklists/blacklist_full.txt")
     black_list = [word.strip() for word in black_list]
     if any(word in password for word in black_list):
         return False
