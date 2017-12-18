@@ -47,20 +47,46 @@ detect_uninstall() {
     fi
 }
 
+display_help() {
+    echo
+    echo "Latest version of SafePass that this script will install: $latest_version"
+    echo 'A tool for installing/uninstalling SafePass.'
+    echo 'Usage: install.sh <option> <package>'
+    echo 'Options:'
+    echo '   -h --help                   Show help'
+    echo '   -u --uninstall              Uninstall SafePass'
+    echo
+    echo 'Submit a GitHub issue if you are encountering problems or want to suggest new features'
+    echo
+    exit 1
+}
+
 if ! [ -e /etc/dict4schools ]; then
+    detect_uninstall
     echo "rm -r /etc/dict4schools" >> /etc/SafePass/uninstall.sh
 fi
 
-if ! [ "$(type -t password)" ] || ! [ -e /etc/dict4schools ] || ! [ $(password --version) == "$latest_version" ]; then
+if ! [ "$(type -t password)" ] || ! [ -e /etc/dict4schools ] || ! [ "$(password --version)" == "$latest_version" ]; then
     detect_uninstall
     if [ -e password.py ]; then
-        cp password.py /usr/local/bin/password
-        cp dict4schools /etc/dict4schools
-
+        if [ "$(python3 password.py --version)" == "$latest_version" ]; then
+            cp password.py /usr/local/bin/password
+            cp -R dict4schools /etc/dict4schools
+        else
+            git pull
+            cp password.py /usr/local/bin/password
+            cp -R dict4schools /etc/dict4schools
+        fi
     elif [ -e SafePass ]; then
-        cp SafePass/password.py /usr/local/bin/password
-        cp SafePass/dict4schools /etc/dict4schools
-
+        if [ "$(python3 SafePass/password.py --version)" == "$latest_version" ]; then
+            cp SafePass/password.py /usr/local/bin/password
+            cp -R SafePass/dict4schools /etc/dict4schools
+        else
+            cd SafePass
+            git pull
+            cp password.py /usr/local/bin/password
+            cp -R dict4schools /etc/dict4schools
+        fi
     else
         git clone --quiet --recursive https://github.com/InnovativeInventor/SafePass
         mv SafePass/password.py /usr/local/bin/password
@@ -69,6 +95,7 @@ if ! [ "$(type -t password)" ] || ! [ -e /etc/dict4schools ] || ! [ $(password -
     fi
     chmod +x /usr/local/bin/password
     password
+    detect_uninstall
     echo "rm /usr/local/bin/password" >> /etc/SafePass/uninstall.sh
     exit
 fi

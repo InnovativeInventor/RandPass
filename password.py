@@ -155,7 +155,7 @@ if args.save:
     passfile = "password.txt"
 if args.version:
     print(version)
-    exit
+    exit(1)
 
 if args.output:
     passfile = args.output
